@@ -1,8 +1,26 @@
-"""Pure aggregation helpers + Plotly figure builders."""
+"""Pure aggregation helpers + Plotly figure builders (dark-theme friendly)."""
 from __future__ import annotations
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+
+# Qualitative palette that reads well on a dark background.
+PALETTE = px.colors.qualitative.Set2
+
+
+def _style(fig: go.Figure) -> go.Figure:
+    """Transparent backgrounds + light font so charts blend into dark theme."""
+    fig.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(color="#e6e6e6"),
+        title=dict(font=dict(color="#fafafa")),
+        legend=dict(font=dict(color="#e6e6e6")),
+        margin=dict(t=55, b=20, l=10, r=10),
+    )
+    fig.update_xaxes(gridcolor="rgba(255,255,255,0.12)", zerolinecolor="rgba(255,255,255,0.2)")
+    fig.update_yaxes(gridcolor="rgba(255,255,255,0.12)", zerolinecolor="rgba(255,255,255,0.2)")
+    return fig
 
 
 def count_by(df: pd.DataFrame, label_col: str) -> pd.Series:
@@ -24,6 +42,26 @@ def daily_counts(df: pd.DataFrame) -> pd.Series:
     return df["_date"].dropna().value_counts().sort_index()
 
 
+def _date_key(s):
+    """Sort key for 'DD/MM/YYYY' labels; non-dates (e.g. 'ອື່ນໆ') sort last."""
+    try:
+        d, m, y = str(s).split("/")
+        return (0, int(y), int(m), int(d))
+    except Exception:
+        return (1, 0, 0, 0)
+
+
+def interview_date_counts(df: pd.DataFrame, label_col: str = "S1_Q5_label") -> pd.Series:
+    """Forms per interview date (decoded S1_Q5), ordered chronologically.
+
+    Falls back to submission date (_date) if the interview-date column is absent.
+    """
+    if label_col not in df.columns or df[label_col].dropna().empty:
+        return daily_counts(df)
+    counts = df[label_col].dropna().value_counts()
+    return counts.reindex(sorted(counts.index, key=_date_key))
+
+
 def awareness_counts(df: pd.DataFrame, q_cols: list[str]) -> pd.DataFrame:
     rows = {}
     for q in q_cols:
@@ -37,28 +75,30 @@ def awareness_counts(df: pd.DataFrame, q_cols: list[str]) -> pd.DataFrame:
 
 def pie(series: pd.Series, title: str) -> go.Figure:
     if series.empty:
-        return go.Figure().update_layout(title=title, annotations=[
-            dict(text="—", showarrow=False, font=dict(size=28))])
-    fig = px.pie(names=series.index, values=series.values, title=title, hole=0.35)
+        return _style(go.Figure().update_layout(title=title, annotations=[
+            dict(text="—", showarrow=False, font=dict(size=28, color="#888"))]))
+    fig = px.pie(names=series.index, values=series.values, title=title, hole=0.4,
+                 color_discrete_sequence=PALETTE)
     fig.update_traces(textinfo="value+percent")
-    return fig
+    return _style(fig)
 
 
 def bar(series: pd.Series, title: str) -> go.Figure:
     if series.empty:
-        return go.Figure().update_layout(title=title)
-    fig = px.bar(x=series.index, y=series.values, title=title, text=series.values)
+        return _style(go.Figure().update_layout(title=title))
+    fig = px.bar(x=series.index, y=series.values, title=title, text=series.values,
+                 color_discrete_sequence=["#4dabf7"])
     fig.update_layout(xaxis_title="", yaxis_title="")
-    return fig
+    return _style(fig)
 
 
 def daily_bar(series: pd.Series, title: str) -> go.Figure:
     if series.empty:
-        return go.Figure().update_layout(title=title)
+        return _style(go.Figure().update_layout(title=title))
     fig = px.bar(x=[str(d) for d in series.index], y=series.values, title=title,
-                 text=series.values)
+                 text=series.values, color_discrete_sequence=["#4dabf7"])
     fig.update_layout(xaxis_title="", yaxis_title="")
-    return fig
+    return _style(fig)
 
 
 def awareness_hbar(table: pd.DataFrame, labels: dict, aware_txt: str,
@@ -67,11 +107,11 @@ def awareness_hbar(table: pd.DataFrame, labels: dict, aware_txt: str,
     labels maps code -> display question text."""
     fig = go.Figure()
     if table.empty:
-        return fig.update_layout(title=title)
+        return _style(fig.update_layout(title=title))
     y = [labels.get(q, q) for q in table.index]
     fig.add_bar(y=y, x=table["aware"], name=aware_txt, orientation="h",
                 marker_color="#2f9e44", text=table["aware"])
     fig.add_bar(y=y, x=table["not_aware"], name=not_aware_txt, orientation="h",
-                marker_color="#c92a2a", text=table["not_aware"])
+                marker_color="#e03131", text=table["not_aware"])
     fig.update_layout(barmode="stack", title=title, xaxis_title="", yaxis_title="")
-    return fig
+    return _style(fig)

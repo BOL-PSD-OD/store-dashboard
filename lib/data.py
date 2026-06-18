@@ -21,5 +21,12 @@ def load_data() -> pd.DataFrame:
     return decode.decode_submissions(subs, form)
 
 
+@st.cache_data(ttl=600)
+def load_question_labels() -> dict:
+    """Ordered {question_code: label} from the live form definition."""
+    return decode.build_question_labels(_fetch_form(_read_config()))
+
+
 def clear_cache() -> None:
     load_data.clear()
+    load_question_labels.clear()

@@ -23,25 +23,55 @@ def build_choice_map(form: dict) -> dict[str, dict[str, str]]:
     """{list_name: {code: label}} from form['content']['choices']."""
     out: dict[str, dict[str, str]] = {}
     for c in form.get("content", {}).get("choices", []):
-        out.setdefault(c["list_name"], {})[str(c["name"])] = label_text(c.get("label"))
+        ln = c.get("list_name")
+        nm = c.get("name", c.get("$autovalue"))
+        if ln is None or nm is None:
+            continue
+        out.setdefault(ln, {})[str(nm)] = label_text(c.get("label")) or str(nm)
     return out
 
 
 def build_question_meta(form: dict) -> dict[str, dict]:
-    """{name: {'select': 'one'|'multiple'|None, 'list': list_name|None, 'label': str}}."""
+    """{name: {'select': 'one'|'multiple'|None, 'list': list_name|None, 'label': str}}.
+
+    Handles both the Kobo asset-content shape (``type='select_one'`` plus a
+    separate ``select_from_list_name`` key) and the XLSForm shape
+    (``type='select_one biz_type'``).
+    """
     out: dict[str, dict] = {}
     for q in form.get("content", {}).get("survey", []):
-        name = q.get("name")
+        name = q.get("name") or q.get("$autoname")
         qtype = str(q.get("type", ""))
         if not name or qtype.startswith(("begin_", "end_")):
             continue
         select = None
-        list_name = None
         if qtype.startswith("select_one"):
-            select, list_name = "one", qtype.split(" ", 1)[1] if " " in qtype else None
+            select = "one"
         elif qtype.startswith("select_multiple"):
-            select, list_name = "multiple", qtype.split(" ", 1)[1] if " " in qtype else None
+            select = "multiple"
+        list_name = q.get("select_from_list_name")
+        if select and not list_name and " " in qtype:
+            list_name = qtype.split(" ", 1)[1]  # XLSForm combined-type fallback
         out[name] = {"select": select, "list": list_name, "label": label_text(q.get("label"))}
+    return out
+
+
+def build_question_labels(form: dict) -> dict[str, str]:
+    """Ordered {name: label} for every named question that has a label.
+
+    Group/section rows are skipped. Survey order is preserved so the profile
+    page can render fields in the order they appear in the form, and it adapts
+    automatically when the form gains/renames questions.
+    """
+    out: dict[str, str] = {}
+    for q in form.get("content", {}).get("survey", []):
+        name = q.get("name") or q.get("$autoname")
+        qtype = str(q.get("type", ""))
+        if not name or qtype.startswith(("begin_", "end_")):
+            continue
+        lab = label_text(q.get("label"))
+        if lab:
+            out[name] = lab
     return out
 
 

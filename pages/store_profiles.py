@@ -1,4 +1,5 @@
 """Store Profiles page: filter, search, results table, full profile + map."""
+import re
 import streamlit as st
 import pandas as pd
 from lib import data, i18n
@@ -53,20 +54,43 @@ names = view["_store_name"].tolist()
 if names:
     picked = st.selectbox(i18n.t("select_store", lang), names, label_visibility="collapsed")
     row = view[view["_store_name"] == picked].iloc[0]
+    qlabels = data.load_question_labels()  # ordered {code: label} from the live form
 
-    sections = {
-        "section_1": ["S1_Q1", "S1_Q2", "S1_Q3", "S1_Q4"],
-        "section_2": ["S2_Q1", "S2_Q3", "S2_Q4", "S2_Q5", "S2_Q6", "S2_Q7",
-                      "S2_Q8", "S2_Q9", "S2_Q10", "S2_Q11", "S2_Q12", "S2_Q13"],
-        "section_3": ["S3_Q1", "S3_Q2", "S3_Q3", "S3_Q4", "S3_Q5"],
-    }
-    for sec_key, codes in sections.items():
+    def _isna(x):
+        return x is None or (not isinstance(x, list) and pd.isna(x))
+
+    def _value(code):
+        """Human-readable answer: decoded label, joined multi-select, plus 'other' text."""
+        val = row.get(code + "_label")
+        if _isna(val):
+            val = row.get(code)
+        if isinstance(val, list):
+            val = ", ".join(str(v) for v in val) if val else None
+        if _isna(val):
+            val = None
+        oth = row.get(code + "_oth")
+        if isinstance(oth, str) and oth.strip():
+            val = f"{val} — {oth}" if val else oth
+        return None if val in (None, "") else str(val)
+
+    # Group questions by section number (S1_/S2_/S3_) in form order; *_oth merged above.
+    sections = {"section_1": [], "section_2": [], "section_3": []}
+    for code, label in qlabels.items():
+        if code.endswith("_oth"):
+            continue
+        m = re.match(r"S(\d)_", code)
+        key = f"section_{m.group(1)}" if m else None
+        if key in sections:
+            sections[key].append((code, label))
+
+    for sec_key, items in sections.items():
+        if not items:
+            continue
         with st.expander(i18n.t(sec_key, lang), expanded=(sec_key == "section_2")):
-            for code in codes:
-                label_col = code + "_label"
-                if label_col in row and row[label_col] not in (None, [], ""):
-                    val = row[label_col]
-                    st.write(f"**{code}**: {', '.join(val) if isinstance(val, list) else val}")
+            for code, label in items:
+                v = _value(code)
+                if v is not None:
+                    st.markdown(f"**{label}**  \n{v}")
 
     # Location map
     lat, lon = row.get("_geopoint_latitude"), row.get("_geopoint_longitude")

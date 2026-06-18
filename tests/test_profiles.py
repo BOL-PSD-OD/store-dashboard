@@ -5,6 +5,8 @@ def _authed_profiles(monkeypatch, form, subs):
     import lib.data as data
     df = decode.decode_submissions(subs, form)
     monkeypatch.setattr(data, "load_data", lambda: df)  # auto-restored after test
+    monkeypatch.setattr(data, "load_question_labels",
+                        lambda: decode.build_question_labels(form))
     at = AppTest.from_file("pages/store_profiles.py")
     at.session_state["authenticated"] = True
     at.session_state["lang"] = "lo"
