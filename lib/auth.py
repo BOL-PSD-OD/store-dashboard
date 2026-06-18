@@ -1,11 +1,22 @@
 """Single shared-password gate with idle timeout (Streamlit session-state)."""
 from __future__ import annotations
+import base64
 import hmac
 import time
+from pathlib import Path
 import streamlit as st
 from lib import i18n
 
 IDLE_TIMEOUT_MIN = 30
+_LOGO = Path(__file__).resolve().parent.parent / "assets" / "BOL_Logo.png"
+
+
+def _logo_html(width: int = 150) -> str:
+    if not _LOGO.exists():
+        return ""
+    b64 = base64.b64encode(_LOGO.read_bytes()).decode()
+    return (f"<div style='text-align:center;margin-bottom:0.5rem'>"
+            f"<img src='data:image/png;base64,{b64}' width='{width}'></div>")
 
 
 def check_password(entered: str, actual: str) -> bool:
@@ -37,13 +48,24 @@ def logout() -> None:
 
 def login_page() -> None:
     lang = st.session_state.get("lang", i18n.DEFAULT_LANG)
-    st.title(i18n.t("app_title", lang))
-    st.subheader(i18n.t("login_title", lang))
-    pw = st.text_input(i18n.t("password", lang), type="password")
-    if st.button(i18n.t("login_btn", lang)):
-        if check_password(pw, st.secrets.get("APP_PASSWORD", "")):
-            st.session_state["authenticated"] = True
-            st.session_state["last_active"] = time.time()
-            st.rerun()
-        else:
-            st.error(i18n.t("login_error", lang))
+    _, mid, _ = st.columns([1, 2, 1])
+    with mid:
+        st.markdown(_logo_html(), unsafe_allow_html=True)
+        st.markdown(
+            f"<h2 style='text-align:center;margin:0'>{i18n.t('app_title', lang)}</h2>"
+            f"<p style='text-align:center;color:#9aa7b4;margin-top:0.25rem'>"
+            f"{i18n.t('login_title', lang)}</p>",
+            unsafe_allow_html=True,
+        )
+        # st.form: pressing Enter in the password field submits (no need to click).
+        with st.form("login_form"):
+            pw = st.text_input(i18n.t("password", lang), type="password")
+            submitted = st.form_submit_button(i18n.t("login_btn", lang),
+                                              use_container_width=True)
+        if submitted:
+            if check_password(pw, st.secrets.get("APP_PASSWORD", "")):
+                st.session_state["authenticated"] = True
+                st.session_state["last_active"] = time.time()
+                st.rerun()
+            else:
+                st.error(i18n.t("login_error", lang))

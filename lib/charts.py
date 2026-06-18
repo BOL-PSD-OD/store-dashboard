@@ -86,9 +86,10 @@ def pie(series: pd.Series, title: str) -> go.Figure:
 def bar(series: pd.Series, title: str) -> go.Figure:
     if series.empty:
         return _style(go.Figure().update_layout(title=title))
-    fig = px.bar(x=series.index, y=series.values, title=title, text=series.values,
-                 color_discrete_sequence=["#4dabf7"])
-    fig.update_layout(xaxis_title="", yaxis_title="")
+    data = pd.DataFrame({"cat": list(series.index), "val": list(series.values)})
+    fig = px.bar(data, x="cat", y="val", title=title, text="val",
+                 color="cat", color_discrete_sequence=PALETTE)
+    fig.update_layout(xaxis_title="", yaxis_title="", legend_title_text="")
     return _style(fig)
 
 
