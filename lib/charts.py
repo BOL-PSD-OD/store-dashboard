@@ -27,9 +27,8 @@ def daily_counts(df: pd.DataFrame) -> pd.Series:
 def awareness_counts(df: pd.DataFrame, q_cols: list[str]) -> pd.DataFrame:
     rows = {}
     for q in q_cols:
-        col = q + "_label"
         aware = not_aware = 0
-        if col in df.columns:
+        if q in df.columns:
             aware = int((df[q] == "1").sum())
             not_aware = int((df[q] == "0").sum())
         rows[q] = {"aware": aware, "not_aware": not_aware}

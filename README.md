@@ -1,4 +1,3 @@
-````markdown
 # store-dashboard — Luang Prabang store survey dashboard
 
 Password-gated Streamlit app reading live from KoboToolbox. Two pages:
@@ -49,4 +48,3 @@ cp secrets.example.toml .streamlit/secrets.toml   # then edit real values
 - `lib/i18n.py` — Lao/English UI strings + a language toggle.
 - `lib/auth.py` — single shared-password gate with 30-min idle timeout.
 - `streamlit_app.py` — auth gate via `st.navigation`; authenticated users get Dashboard + Store Profiles.
-````
