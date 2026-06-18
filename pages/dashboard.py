@@ -14,6 +14,7 @@ if df.empty:
     st.metric(i18n.t("kpi_today", lang), 0)
     st.metric(i18n.t("kpi_days", lang), 0)
     st.metric(i18n.t("kpi_districts", lang), 0)
+    st.metric(i18n.t("kpi_villages", lang), 0)
     st.stop()
 
 # --- KPI cards (interview date = S1_Q5, falls back to submission date) ---
@@ -29,12 +30,14 @@ else:
     today_n = int((df["_date"] == today).sum()) if "_date" in df.columns else 0
     days = int(df["_date"].dropna().nunique()) if "_date" in df.columns else 0
 districts = int(df["S2_Q9_label"].dropna().nunique()) if "S2_Q9_label" in df.columns else 0
+villages = int(df["S2_Q10_label"].dropna().nunique()) if "S2_Q10_label" in df.columns else 0
 
-c1, c2, c3, c4 = st.columns(4)
+c1, c2, c3, c4, c5 = st.columns(5)
 c1.metric(i18n.t("kpi_total", lang), total)
 c2.metric(i18n.t("kpi_today", lang), today_n)
 c3.metric(i18n.t("kpi_days", lang), days)
 c4.metric(i18n.t("kpi_districts", lang), districts)
+c5.metric(i18n.t("kpi_villages", lang), villages)
 
 # --- Daily chart (by interview date S1_Q5) ---
 st.plotly_chart(charts.daily_bar(charts.interview_date_counts(df), i18n.t("chart_daily", lang)),
