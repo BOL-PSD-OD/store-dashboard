@@ -1,6 +1,9 @@
 """Pure transforms: Kobo form definition + submissions -> labelled DataFrame."""
 from __future__ import annotations
 
+import datetime as dt
+import pandas as pd
+
 
 def strip_group(key: str) -> str:
     """'Section_2/S2_Q1' -> 'S2_Q1' (Kobo prefixes answers with group path)."""
@@ -40,3 +43,49 @@ def build_question_meta(form: dict) -> dict[str, dict]:
             select, list_name = "multiple", qtype.split(" ", 1)[1] if " " in qtype else None
         out[name] = {"select": select, "list": list_name, "label": label_text(q.get("label"))}
     return out
+
+
+VIENTIANE_OFFSET = dt.timedelta(hours=7)
+
+
+def _to_local_date(iso: str):
+    if not iso:
+        return None
+    s = str(iso).replace("Z", "")
+    try:
+        ts = dt.datetime.fromisoformat(s)
+    except ValueError:
+        return None
+    return (ts + VIENTIANE_OFFSET).date()
+
+
+def decode_submissions(subs: list[dict], form: dict) -> pd.DataFrame:
+    qmeta = build_question_meta(form)
+    cmap = build_choice_map(form)
+    rows = []
+    for rec in subs:
+        flat = {strip_group(k): v for k, v in rec.items()}
+        row = dict(flat)
+        for name, meta in qmeta.items():
+            raw = flat.get(name)
+            lst = cmap.get(meta["list"], {})
+            if meta["select"] == "multiple":
+                codes = str(raw).split() if raw not in (None, "") else []
+                row[name] = codes
+                row[name + "_label"] = [lst.get(c, c) for c in codes]
+            elif meta["select"] == "one":
+                code = "" if raw is None else str(raw)
+                row[name] = code if code else None
+                row[name + "_label"] = lst.get(code) if code else None
+        row["_date"] = _to_local_date(flat.get("_submission_time"))
+        rows.append(row)
+
+    if not rows:
+        cols = []
+        for name, meta in qmeta.items():
+            cols.append(name)
+            if meta["select"]:
+                cols.append(name + "_label")
+        cols.append("_date")
+        return pd.DataFrame(columns=cols)
+    return pd.DataFrame(rows)
