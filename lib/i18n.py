@@ -30,7 +30,7 @@ UI = {
     "chart_qr":         {"lo": "ປ້າຍ QR", "en": "QR sign"},
     "chart_night":      {"lo": "ຕະຫຼາດກາງຄືນ", "en": "Night market"},
     "chart_awareness":  {"lo": "ຄວາມຮັບຮູ້ກ່ຽວກັບລະບຽບການ", "en": "Regulation awareness"},
-    "section3_questions": {"lo": "ເບິ່ງຄຳຖາມເຕັມ (ພາກທີ 3)", "en": "Show full questions (Section 3)"},
+    "section3_questions": {"lo": "ຄຳຖາມພາກທີ 3", "en": "Section 3 questions"},
     "chart_psp":        {"lo": "ທະນາຄານ / ຜູ້ໃຫ້ບໍລິການ", "en": "Banks / PSPs used"},
     "aware_yes":        {"lo": "ເຄີຍຮັບຮູ້", "en": "Aware"},
     "aware_no":         {"lo": "ບໍ່ເຄີຍ", "en": "Not aware"},
