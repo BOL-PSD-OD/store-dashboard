@@ -115,4 +115,5 @@ def awareness_hbar(table: pd.DataFrame, labels: dict, aware_txt: str,
     fig.add_bar(y=y, x=table["not_aware"], name=not_aware_txt, orientation="h",
                 marker_color="#e03131", text=table["not_aware"])
     fig.update_layout(barmode="stack", title=title, xaxis_title="", yaxis_title="")
+    fig.update_yaxes(autorange="reversed")  # 3.1 at top, 3.5 at bottom
     return _style(fig)

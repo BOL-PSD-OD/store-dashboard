@@ -65,6 +65,11 @@ st.plotly_chart(
                           i18n.t("aware_yes", lang), i18n.t("aware_no", lang),
                           i18n.t("chart_awareness", lang)),
     use_container_width=True)
+qlabels = data.load_question_labels()
+if s3:
+    with st.expander(i18n.t("section3_questions", lang)):
+        for q in s3:
+            st.markdown(f"**{labels[q]}** — {qlabels.get(q, q)}")
 
 # --- PSP bar (select_multiple) ---
 st.plotly_chart(charts.bar(charts.count_multi(df, "S2_Q8_label"), i18n.t("chart_psp", lang)),
