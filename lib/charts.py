@@ -6,6 +6,8 @@ import plotly.graph_objects as go
 
 # Qualitative palette that reads well on a dark background.
 PALETTE = px.colors.qualitative.Set2
+# Latin/digits -> Times New Roman, Lao -> Phetsarath (loaded app-wide via @import).
+FONT_STACK = "'Times New Roman', 'Phetsarath', serif"
 
 
 def _style(fig: go.Figure) -> go.Figure:
@@ -13,8 +15,8 @@ def _style(fig: go.Figure) -> go.Figure:
     fig.update_layout(
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(color="#e6e6e6"),
-        title=dict(font=dict(color="#fafafa")),
+        font=dict(color="#e6e6e6", family=FONT_STACK),
+        title=dict(font=dict(color="#fafafa", family=FONT_STACK)),
         legend=dict(font=dict(color="#e6e6e6")),
         margin=dict(t=55, b=20, l=10, r=10),
     )

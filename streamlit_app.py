@@ -4,6 +4,18 @@ from lib import auth, i18n, data
 
 st.set_page_config(page_title="Store Survey Dashboard", page_icon="🏪", layout="wide")
 
+# Fonts: Latin/digits -> Times New Roman, Lao glyphs -> Phetsarath (font fallback).
+# Re-apply the Material icon font so Streamlit UI icons keep working.
+FONT_CSS = """
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Phetsarath:wght@400;700&display=swap');
+.stApp, .stApp * { font-family: 'Times New Roman', 'Phetsarath', serif !important; }
+.stApp [data-testid="stIconMaterial"],
+.stApp [class*="material-symbols"] { font-family: 'Material Symbols Rounded' !important; }
+</style>
+"""
+st.markdown(FONT_CSS, unsafe_allow_html=True)
+
 if "lang" not in st.session_state:
     st.session_state["lang"] = i18n.DEFAULT_LANG
 
