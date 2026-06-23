@@ -1,8 +1,30 @@
 """Store Profiles page: filter, search, results table, full profile + map."""
 import re
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 from lib import data, i18n
+
+# Small Leaflet location map with a 3-basemap switcher (OSM / Carto Dark / Carto
+# White). Self-contained iframe; __LAT__/__LON__ are substituted per store.
+PROFILE_MAP_HTML = """
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<div id="m" style="height:340px;border-radius:10px;overflow:hidden"></div>
+<script>
+  const lat = __LAT__, lon = __LON__;
+  const osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          {maxZoom:19, attribution:'© OpenStreetMap'});
+  const dark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+                           {maxZoom:19, subdomains:'abcd', attribution:'© CARTO'});
+  const light = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+                            {maxZoom:19, subdomains:'abcd', attribution:'© CARTO'});
+  const map = L.map('m', {center:[lat, lon], zoom:15, layers:[dark]});
+  L.control.layers({'OpenStreetMap':osm, 'Carto Dark':dark, 'Carto White':light}).addTo(map);
+  L.circleMarker([lat, lon], {radius:9, color:'#fff', weight:2,
+                              fillColor:'#ff2d2d', fillOpacity:1}).addTo(map);
+</script>
+"""
 
 lang = st.session_state.get("lang", i18n.DEFAULT_LANG)
 df = data.load_data()
@@ -114,4 +136,5 @@ if names:
 
     lat, lon = _latlon(row)
     if pd.notna(lat) and pd.notna(lon):
-        st.map(pd.DataFrame({"lat": [float(lat)], "lon": [float(lon)]}))
+        html = PROFILE_MAP_HTML.replace("__LAT__", repr(float(lat))).replace("__LON__", repr(float(lon)))
+        components.html(html, height=360)
