@@ -34,6 +34,13 @@ def test_grouped_bar_returns_figure(form, subs):
     assert isinstance(charts.grouped_bar(charts.count_multi_grouped(df, {}), "t"), go.Figure)
 
 
+def test_network_pie_series(form, subs):
+    df = decode.decode_submissions(subs, form)
+    counts = charts.count_multi(df, "S3_Q14_label")
+    assert counts["Alipay"] == 2          # both records use Alipay
+    assert counts["Wechat Pay"] == 1
+
+
 def test_status_pie_series(form, subs):
     df = decode.decode_submissions(subs, form)
     counts = charts.count_by(df, "_status_label")

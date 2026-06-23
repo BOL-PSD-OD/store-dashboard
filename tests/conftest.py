@@ -23,6 +23,7 @@ def form():
                 {"type": "select_multiple psp", "name": "S3_Q11", "label": ["3.11 psp merchant"]},
                 {"type": "select_one YN_Use", "name": "S3_Q12", "label": ["3.12 use domestic"]},
                 {"type": "select_multiple psp", "name": "S3_Q13", "label": ["3.13 psp foreign"]},
+                {"type": "select_multiple Network", "name": "S3_Q14", "label": ["3.14 foreign tools"]},
                 {"type": "select_one int", "name": "S3_Q15", "label": ["3.15 interested"]},
                 {"type": "select_one profit", "name": "S3_Q17", "label": ["3.17 revenue"]},
                 {"type": "end_group"},
@@ -51,6 +52,9 @@ def form():
                 {"list_name": "QR", "name": "2", "label": ["QR ຮ້ານຄ້າ"]},
                 {"list_name": "psp", "name": "1", "label": ["BCEL"]},
                 {"list_name": "psp", "name": "2", "label": ["JDB"]},
+                {"list_name": "Network", "name": "1", "label": ["Alipay"]},
+                {"list_name": "Network", "name": "2", "label": ["Alipay Plus"]},
+                {"list_name": "Network", "name": "3", "label": ["Wechat Pay"]},
                 {"list_name": "YN_Use", "name": "1", "label": ["ໃຊ້ບໍລິການພາຍໃນ"]},
                 {"list_name": "YN_Use", "name": "0", "label": ["ບໍ່ໄດ້ໃຊ້"]},
                 {"list_name": "int", "name": "1", "label": ["ສົນໃຈ"]},
@@ -71,12 +75,12 @@ def subs():
         {"S0_Q1": "2026-06-29", "S1_Q1": "1", "Section_3/S3_Q1": "restaurant",
          "S3_Q2": "other_shop", "S3_Q2_oth": "Taiwan", "S3_Q3": "d02", "S3_Q4": "v01",
          "S3_Q6": "1", "S3_Q7": "1 2", "S3_Q9": "1", "S3_Q10": "1 2", "S3_Q11": "2",
-         "S3_Q12": "0", "S3_Q15": "1", "S3_Q17": "2", "S4_Q1": "1", "S4_Q2": "0",
+         "S3_Q14": "1 2 3", "S3_Q12": "0", "S3_Q15": "1", "S3_Q17": "2", "S4_Q1": "1", "S4_Q2": "0",
          "geopoint": "19.88 102.13 300 5", "_submission_time": "2026-06-29T03:00:00", "_id": 1},
         # foreign only, not using, not interested -> foreign_unint
         # PSP: foreign acceptance -> BCEL
         {"S0_Q1": "2026-06-29", "S1_Q1": "0", "Section_3/S3_Q1": "hotel",
          "S3_Q2": "H001", "S3_Q3": "d01", "S3_Q4": "v01", "S3_Q6": "0", "S3_Q7": "2",
-         "S3_Q13": "1", "S3_Q12": "0", "S3_Q15": "0", "S3_Q17": "1", "S4_Q1": "0",
+         "S3_Q13": "1", "S3_Q14": "1", "S3_Q12": "0", "S3_Q15": "0", "S3_Q17": "1", "S4_Q1": "0",
          "S4_Q2": "1", "_submission_time": "2026-06-29T10:00:00", "_id": 2},
     ]

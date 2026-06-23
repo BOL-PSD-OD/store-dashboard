@@ -61,7 +61,7 @@ with st.container(border=True):
 pie_specs = [
     ("S3_Q1_label", "chart_biztype", False), ("S3_Q6_label", "chart_license", False),
     ("_status_label", "chart_status", False), ("S3_Q17_label", "chart_revenue", False),
-    ("S3_Q9_label", "chart_qr", True), ("S3_Q3_label", "chart_district", False),
+    ("S3_Q9_label", "chart_qr", True), ("S3_Q14_label", "chart_network", True),
 ]
 cols = st.columns(3)
 for i, (col, key, multi) in enumerate(pie_specs):

@@ -28,6 +28,7 @@ UI = {
     "chart_status":     {"lo": "ສະຖານະພາບ", "en": "Account status"},
     "chart_revenue":    {"lo": "ລະດັບລາຍຮັບ / ຂະໜາດ", "en": "Revenue / SME size"},
     "chart_qr":         {"lo": "QR ພາຍໃນ", "en": "Domestic QR"},
+    "chart_network":    {"lo": "ເຄື່ອງມືຮັບຊຳລະຕ່າງປະເທດ", "en": "Foreign payment apps"},
     "chart_district":   {"lo": "ເມືອງ", "en": "District"},
     "chart_awareness":  {"lo": "ຄວາມຮັບຮູ້ກ່ຽວກັບລະບຽບການ", "en": "Regulation awareness"},
     "section4_questions": {"lo": "ຄຳຖາມໝວດທີ່ 04", "en": "Section 04 questions"},
