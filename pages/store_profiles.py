@@ -29,8 +29,8 @@ PROFILE_MAP_HTML = """
   const boundary = __BOUNDARY__;
   const overlays = {};
   if (boundary) {
-    const bLayer = L.geoJSON(boundary, {style:{color:'#ff6f00', weight:1.5,
-                                                fill:false, opacity:0.85}}).addTo(map);
+    const bLayer = L.geoJSON(boundary, {style:{color:'#000000', weight:2,
+                                                fill:false, opacity:0.9}}).addTo(map);
     overlays['ຂອບເຂດເມືອງ · District boundary'] = bLayer;
   }
   L.control.layers({'OpenStreetMap':osm, 'Carto Dark':dark, 'Carto White':light},
