@@ -14,6 +14,26 @@ def test_count_multi(form, subs):
     assert counts["BCEL"] == 2
     assert counts["JDB"] == 1
 
+def test_count_multi_grouped(form, subs):
+    df = decode.decode_submissions(subs, form)
+    long = charts.count_multi_grouped(df, {
+        "S3_Q10_label": "Lao QR", "S3_Q11_label": "Merchant", "S3_Q13_label": "Foreign"})
+    got = {(r.provider, r.context): r.count for r in long.itertuples()}
+    assert got[("BCEL", "Lao QR")] == 1
+    assert got[("JDB", "Lao QR")] == 1
+    assert got[("JDB", "Merchant")] == 1
+    assert got[("BCEL", "Foreign")] == 1
+    # no merchant-context BCEL in the fixture
+    assert ("BCEL", "Merchant") not in got
+
+
+def test_grouped_bar_returns_figure(form, subs):
+    df = decode.decode_submissions(subs, form)
+    long = charts.count_multi_grouped(df, {"S3_Q10_label": "Lao QR"})
+    assert isinstance(charts.grouped_bar(long, "title"), go.Figure)
+    assert isinstance(charts.grouped_bar(charts.count_multi_grouped(df, {}), "t"), go.Figure)
+
+
 def test_status_pie_series(form, subs):
     df = decode.decode_submissions(subs, form)
     counts = charts.count_by(df, "_status_label")

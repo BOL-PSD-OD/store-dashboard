@@ -38,6 +38,21 @@ def count_multi(df: pd.DataFrame, label_list_col: str) -> pd.Series:
     return exploded.value_counts()
 
 
+def count_multi_grouped(df: pd.DataFrame, col_to_context: dict) -> pd.DataFrame:
+    """Count a provider list-column per context -> long DF [provider, context, count].
+
+    col_to_context maps each ``*_label`` column to its context label, e.g.
+    {"S3_Q10_label": "Lao QR", "S3_Q11_label": "Merchant QR", ...}.
+    """
+    rows = []
+    for col, ctx in col_to_context.items():
+        if col not in df.columns or df.empty:
+            continue
+        for provider, n in df[col].explode().dropna().value_counts().items():
+            rows.append({"provider": provider, "context": ctx, "count": int(n)})
+    return pd.DataFrame(rows, columns=["provider", "context", "count"])
+
+
 def daily_counts(df: pd.DataFrame) -> pd.Series:
     if "_date" not in df.columns or df.empty:
         return pd.Series(dtype=int)
@@ -91,6 +106,17 @@ def bar(series: pd.Series, title: str) -> go.Figure:
     data = pd.DataFrame({"cat": list(series.index), "val": list(series.values)})
     fig = px.bar(data, x="cat", y="val", title=title, text="val",
                  color="cat", color_discrete_sequence=PALETTE)
+    fig.update_layout(xaxis_title="", yaxis_title="", legend_title_text="")
+    return _style(fig)
+
+
+def grouped_bar(long_df: pd.DataFrame, title: str) -> go.Figure:
+    """Grouped bar from a long DF [provider, context, count] (see count_multi_grouped)."""
+    if long_df.empty:
+        return _style(go.Figure().update_layout(title=title, annotations=[
+            dict(text="—", showarrow=False, font=dict(size=28, color="#888"))]))
+    fig = px.bar(long_df, x="provider", y="count", color="context", barmode="group",
+                 title=title, text="count", color_discrete_sequence=PALETTE)
     fig.update_layout(xaxis_title="", yaxis_title="", legend_title_text="")
     return _style(fig)
 

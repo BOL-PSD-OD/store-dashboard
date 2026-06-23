@@ -85,7 +85,14 @@ with st.container(border=True):
             # form label already starts with the '4.x' number, so show it as-is
             st.markdown(f"- {qlabels.get(q, q)}")
 
-# --- PSP bar (bento card) — combined across S3_Q10/Q11/Q13 ---
+# --- PSP grouped bar (bento card) — split by the 3 contexts ---
+# S3_Q10 = Lao QR, S3_Q11 = merchant QR, S3_Q13 = foreign acceptance.
+psp_ctx = {
+    "S3_Q10_label": i18n.t("psp_ctx_laoqr", lang),
+    "S3_Q11_label": i18n.t("psp_ctx_merchant", lang),
+    "S3_Q13_label": i18n.t("psp_ctx_foreign", lang),
+}
 with st.container(border=True):
-    st.plotly_chart(charts.bar(charts.count_multi(df, "_psp_label"), i18n.t("chart_psp", lang)),
-                    use_container_width=True)
+    st.plotly_chart(
+        charts.grouped_bar(charts.count_multi_grouped(df, psp_ctx), i18n.t("chart_psp", lang)),
+        use_container_width=True)
