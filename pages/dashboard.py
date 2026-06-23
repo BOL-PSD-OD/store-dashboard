@@ -29,10 +29,10 @@ if df.empty:
         st.metric(i18n.t(k, lang), 0)
     st.stop()
 
-# --- KPI values (interview date = S1_Q5, falls back to submission date) ---
+# --- KPI values (interview date = S0_Q1, falls back to submission date) ---
 today = (dt.datetime.now(dt.timezone.utc) + dt.timedelta(hours=7)).date()
 today_str = today.strftime("%d/%m/%Y")
-date_col = "S1_Q5_label" if "S1_Q5_label" in df.columns and df["S1_Q5_label"].notna().any() else None
+date_col = "_idate_label" if "_idate_label" in df.columns and df["_idate_label"].notna().any() else None
 
 total = len(df)
 if date_col:
@@ -41,8 +41,8 @@ if date_col:
 else:
     today_n = int((df["_date"] == today).sum()) if "_date" in df.columns else 0
     days = int(df["_date"].dropna().nunique()) if "_date" in df.columns else 0
-districts = int(df["S2_Q9_label"].dropna().nunique()) if "S2_Q9_label" in df.columns else 0
-villages = int(df["S2_Q10_label"].dropna().nunique()) if "S2_Q10_label" in df.columns else 0
+districts = int(df["S3_Q3_label"].dropna().nunique()) if "S3_Q3_label" in df.columns else 0
+villages = int(df["S3_Q4_label"].dropna().nunique()) if "S3_Q4_label" in df.columns else 0
 
 # --- KPI cards (each its own bento cell) ---
 kpis = [("kpi_total", total), ("kpi_today", today_n), ("kpi_days", days),
@@ -57,34 +57,35 @@ with st.container(border=True):
                     use_container_width=True)
 
 # --- 6 pies in a 3x2 grid, each in its own bento card ---
+# (col, i18n key, is multi-select?). Account status is the derived 9-state column.
 pie_specs = [
-    ("S2_Q1_label", "chart_biztype"), ("S2_Q3_label", "chart_license"),
-    ("S2_Q7_label", "chart_status"), ("S2_Q4_label", "chart_market"),
-    ("S2_Q5_label", "chart_qr"), ("S2_Q11_label", "chart_night"),
+    ("S3_Q1_label", "chart_biztype", False), ("S3_Q6_label", "chart_license", False),
+    ("_status_label", "chart_status", False), ("S3_Q17_label", "chart_revenue", False),
+    ("S3_Q9_label", "chart_qr", True), ("S3_Q3_label", "chart_district", False),
 ]
 cols = st.columns(3)
-for i, (col, key) in enumerate(pie_specs):
+for i, (col, key, multi) in enumerate(pie_specs):
+    series = charts.count_multi(df, col) if multi else charts.count_by(df, col)
     with cols[i % 3].container(border=True):
-        st.plotly_chart(charts.pie(charts.count_by(df, col), i18n.t(key, lang)),
-                        use_container_width=True)
+        st.plotly_chart(charts.pie(series, i18n.t(key, lang)), use_container_width=True)
 
-# --- Section-3 awareness + full question list (one bento card) ---
-s3 = [c for c in ["S3_Q1", "S3_Q2", "S3_Q3", "S3_Q4", "S3_Q5"] if c in df.columns]
-labels = {q: f"{q[1]}.{q[-1]}" for q in s3}  # 'S3_Q1' -> '3.1'
+# --- Section-4 awareness + full question list (one bento card) ---
+s4 = [c for c in ["S4_Q1", "S4_Q2", "S4_Q3", "S4_Q4"] if c in df.columns]
+labels = {q: f"{q[1]}.{q.split('_Q')[-1]}" for q in s4}  # 'S4_Q1' -> '4.1'
 qlabels = data.load_question_labels()
 with st.container(border=True):
     st.plotly_chart(
-        charts.awareness_hbar(charts.awareness_counts(df, s3), labels,
+        charts.awareness_hbar(charts.awareness_counts(df, s4), labels,
                               i18n.t("aware_yes", lang), i18n.t("aware_no", lang),
                               i18n.t("chart_awareness", lang)),
         use_container_width=True)
-    if s3:
-        st.markdown(f"**{i18n.t('section3_questions', lang)}**")
-        for q in s3:
-            # form label already starts with the '3.x' number, so show it as-is
+    if s4:
+        st.markdown(f"**{i18n.t('section4_questions', lang)}**")
+        for q in s4:
+            # form label already starts with the '4.x' number, so show it as-is
             st.markdown(f"- {qlabels.get(q, q)}")
 
-# --- PSP bar (bento card) ---
+# --- PSP bar (bento card) — combined across S3_Q10/Q11/Q13 ---
 with st.container(border=True):
-    st.plotly_chart(charts.bar(charts.count_multi(df, "S2_Q8_label"), i18n.t("chart_psp", lang)),
+    st.plotly_chart(charts.bar(charts.count_multi(df, "_psp_label"), i18n.t("chart_psp", lang)),
                     use_container_width=True)

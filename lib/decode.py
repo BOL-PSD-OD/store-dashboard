@@ -89,6 +89,73 @@ def _to_local_date(iso: str):
     return (ts + VIENTIANE_OFFSET).date()
 
 
+def _ddmmyyyy(iso: str):
+    """ISO date / datetime -> 'DD/MM/YYYY' (used for the interview date S0_Q1)."""
+    d = _to_local_date(iso)
+    return d.strftime("%d/%m/%Y") if d else None
+
+
+# --- Derived account status (9 states) --------------------------------------
+# Mirrors kobo-live-map/build_map.py and store_master/status.py. Status is
+# S3_Q7 (acquirer) x S3_Q12 (use_domestic) x S3_Q15 (interested). S3_Q7 codes:
+# "1" domestic, "2"/"0" foreign ("0" = legacy form), "3" no payment tool.
+STATUS_LABELS = {  # key -> Lao label for pie slices / profile / table
+    "domestic":      "ໃນ · ມີ QR",
+    "both_using":    "ໃນ+ນອກ · ໃຊ້ພາຍໃນ",
+    "foreign_using": "ນອກ · ໃຊ້ພາຍໃນ",
+    "both_int":      "ໃນ+ນອກ · ບໍ່ໃຊ້ · ສົນໃຈ",
+    "foreign_int":   "ນອກ · ບໍ່ໃຊ້ · ສົນໃຈ",
+    "notool_int":    "ບໍ່ມີເຄື່ອງມື · ສົນໃຈ",
+    "both_unint":    "ໃນ+ນອກ · ບໍ່ໃຊ້ · ບໍ່ສົນໃຈ",
+    "foreign_unint": "ນອກ · ບໍ່ໃຊ້ · ບໍ່ສົນໃຈ",
+    "notool_unint":  "ບໍ່ມີເຄື່ອງມື · ບໍ່ສົນໃຈ",
+    "unknown":       "ບໍ່ລະບຸ",
+}
+IN_SYSTEM = ("domestic", "both_using", "foreign_using")  # KPI "success" group
+
+
+def derive_status(acquirer, use_domestic, interested) -> str:
+    """acquirer: iterable of S3_Q7 codes; use_domestic/interested: '1'/'0'/None."""
+    acq = set(acquirer or [])
+    dom = "1" in acq
+    foreign = "2" in acq or "0" in acq
+    notool = "3" in acq
+    if dom and foreign:
+        if use_domestic == "1":
+            return "both_using"
+        return "both_int" if interested == "1" else "both_unint"
+    if foreign:
+        if use_domestic == "1":
+            return "foreign_using"
+        return "foreign_int" if interested == "1" else "foreign_unint"
+    if dom:
+        return "domestic"
+    if notool:
+        return "notool_int" if interested == "1" else "notool_unint"
+    return "unknown"
+
+
+# Derived columns added to every decoded row (also seeded on the empty frame).
+DERIVED_COLS = ["_date", "_idate_label", "_status", "_status_label", "_psp_label"]
+PSP_COLS = ("S3_Q10", "S3_Q11", "S3_Q13")  # bank/PSP across the three branches
+
+
+def _enrich(row: dict, flat: dict) -> None:
+    """Add the derived columns (status, interview date, combined PSP) to a row."""
+    row["_date"] = _to_local_date(flat.get("_submission_time"))
+    row["_idate_label"] = _ddmmyyyy(flat.get("S0_Q1"))
+    acq = row.get("S3_Q7") if isinstance(row.get("S3_Q7"), list) else []
+    status = derive_status(acq, row.get("S3_Q12"), row.get("S3_Q15"))
+    row["_status"] = status
+    row["_status_label"] = STATUS_LABELS.get(status, status)
+    psp: list[str] = []
+    for q in PSP_COLS:
+        for x in (row.get(q + "_label") or []):
+            if x and x not in psp:
+                psp.append(x)
+    row["_psp_label"] = psp
+
+
 def decode_submissions(subs: list[dict], form: dict) -> pd.DataFrame:
     qmeta = build_question_meta(form)
     cmap = build_choice_map(form)
@@ -107,7 +174,7 @@ def decode_submissions(subs: list[dict], form: dict) -> pd.DataFrame:
                 code = "" if raw is None else str(raw)
                 row[name] = code if code else None
                 row[name + "_label"] = lst.get(code) if code else None
-        row["_date"] = _to_local_date(flat.get("_submission_time"))
+        _enrich(row, flat)
         rows.append(row)
 
     if not rows:
@@ -116,6 +183,6 @@ def decode_submissions(subs: list[dict], form: dict) -> pd.DataFrame:
             cols.append(name)
             if meta["select"]:
                 cols.append(name + "_label")
-        cols.append("_date")
+        cols += DERIVED_COLS
         return pd.DataFrame(columns=cols)
     return pd.DataFrame(rows)

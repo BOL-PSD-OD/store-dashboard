@@ -53,8 +53,8 @@ def _date_key(s):
         return (1, 0, 0, 0)
 
 
-def interview_date_counts(df: pd.DataFrame, label_col: str = "S1_Q5_label") -> pd.Series:
-    """Forms per interview date (decoded S1_Q5), ordered chronologically.
+def interview_date_counts(df: pd.DataFrame, label_col: str = "_idate_label") -> pd.Series:
+    """Forms per interview date (S0_Q1, formatted DD/MM/YYYY), chronological.
 
     Falls back to submission date (_date) if the interview-date column is absent.
     """

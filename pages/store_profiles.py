@@ -15,7 +15,7 @@ if df.empty:
 
 
 def _name(row) -> str:
-    for col in ("S2_Q2_oth", "S2_Q2_label", "S2_Q2"):
+    for col in ("S3_Q2_oth", "S3_Q2_label", "S3_Q2"):
         v = row.get(col)
         if isinstance(v, str) and v.strip():
             return v
@@ -28,23 +28,23 @@ df["_store_name"] = df.apply(_name, axis=1)
 # --- Filters ---
 all_txt = i18n.t("all", lang)
 with st.sidebar:
-    types = [all_txt] + sorted(df["S2_Q1_label"].dropna().unique().tolist())
+    types = [all_txt] + sorted(df["S3_Q1_label"].dropna().unique().tolist())
     pick_type = st.selectbox(i18n.t("filter_biztype", lang), types)
     query = st.text_input(i18n.t("search_store", lang))
 
 view = df
 if pick_type != all_txt:
-    view = view[view["S2_Q1_label"] == pick_type]
+    view = view[view["S3_Q1_label"] == pick_type]
 if query:
     view = view[view["_store_name"].str.contains(query, case=False, na=False)]
 
 st.caption(i18n.t("results_count", lang).format(n=len(view)))
 
 # --- Results table ---
-show = view[["_store_name", "S2_Q1_label", "S2_Q7_label"]].rename(columns={
+show = view[["_store_name", "S3_Q1_label", "_status_label"]].rename(columns={
     "_store_name": i18n.t("search_store", lang),
-    "S2_Q1_label": i18n.t("filter_biztype", lang),
-    "S2_Q7_label": i18n.t("filter_status", lang),
+    "S3_Q1_label": i18n.t("filter_biztype", lang),
+    "_status_label": i18n.t("filter_status", lang),
 })
 st.dataframe(show, use_container_width=True, hide_index=True)
 
@@ -73,8 +73,8 @@ if names:
             val = f"{val} — {oth}" if val else oth
         return None if val in (None, "") else str(val)
 
-    # Group questions by section number (S1_/S2_/S3_) in form order; *_oth merged above.
-    sections = {"section_1": [], "section_2": [], "section_3": []}
+    # Group questions by section number (S1_–S4_) in form order; *_oth merged above.
+    sections = {"section_1": [], "section_2": [], "section_3": [], "section_4": []}
     for code, label in qlabels.items():
         if code.endswith("_oth"):
             continue
@@ -86,13 +86,26 @@ if names:
     for sec_key, items in sections.items():
         if not items:
             continue
-        with st.expander(i18n.t(sec_key, lang), expanded=(sec_key == "section_2")):
+        with st.expander(i18n.t(sec_key, lang), expanded=(sec_key == "section_3")):
             for code, label in items:
                 v = _value(code)
                 if v is not None:
                     st.markdown(f"**{label}**  \n{v}")
 
-    # Location map
-    lat, lon = row.get("_geopoint_latitude"), row.get("_geopoint_longitude")
+    # Location map: geopoint question is "lat lon alt prec"; fall back to _geolocation.
+    def _latlon(r):
+        raw = r.get("geopoint")
+        if isinstance(raw, str) and len(raw.split()) >= 2:
+            a, b = raw.split()[:2]
+            try:
+                return float(a), float(b)
+            except ValueError:
+                pass
+        g = r.get("_geolocation")
+        if isinstance(g, list) and len(g) >= 2 and g[0] is not None and g[1] is not None:
+            return float(g[0]), float(g[1])
+        return r.get("_geopoint_latitude"), r.get("_geopoint_longitude")
+
+    lat, lon = _latlon(row)
     if pd.notna(lat) and pd.notna(lon):
         st.map(pd.DataFrame({"lat": [float(lat)], "lon": [float(lon)]}))

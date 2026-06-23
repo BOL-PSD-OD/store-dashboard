@@ -16,7 +16,7 @@ def test_build_choice_map(form):
 
 def test_build_question_meta(form):
     qm = decode.build_question_meta(form)
-    assert qm["S2_Q1"] == {"select": "one", "list": "biz_type", "label": "2.1 biz type"}
-    assert qm["S2_Q8"]["select"] == "multiple"
+    assert qm["S3_Q1"] == {"select": "one", "list": "biz_type", "label": "3.1 biz type"}
+    assert qm["S3_Q7"]["select"] == "multiple"
     assert "S1_Q1" in qm
-    assert "Section_2" not in qm  # groups excluded
+    assert "Section_3" not in qm  # groups excluded
