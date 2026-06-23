@@ -24,6 +24,12 @@ def _name(row) -> str:
 
 df = df.copy()
 df["_store_name"] = df.apply(_name, axis=1)
+# Resilience: guarantee the columns the filter/table reference exist, so a
+# transient stale-cache state (data decoded by older code) degrades to blanks
+# instead of a hard KeyError crash.
+for _c in ("S3_Q1_label", "_status_label"):
+    if _c not in df.columns:
+        df[_c] = None
 
 # --- Filters ---
 all_txt = i18n.t("all", lang)
