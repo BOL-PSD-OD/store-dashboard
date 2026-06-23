@@ -1,9 +1,15 @@
 """Store Profiles page: filter, search, results table, full profile + map."""
 import re
+from pathlib import Path
 import streamlit as st
 import streamlit.components.v1 as components
 import pandas as pd
 from lib import data, i18n
+
+# LPB district boundaries (bundled from kobo-live-map/assets); shown as a
+# toggleable overlay on the profile map. "null" if the file is missing.
+_BOUNDARY_PATH = Path(__file__).resolve().parent.parent / "assets" / "districts_lpb.geojson"
+_BOUNDARY = _BOUNDARY_PATH.read_text(encoding="utf-8") if _BOUNDARY_PATH.exists() else "null"
 
 # Small Leaflet location map with a 3-basemap switcher (OSM / Carto Dark / Carto
 # White). Self-contained iframe; __LAT__/__LON__ are substituted per store.
@@ -19,8 +25,16 @@ PROFILE_MAP_HTML = """
                            {maxZoom:19, subdomains:'abcd', attribution:'© CARTO'});
   const light = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
                             {maxZoom:19, subdomains:'abcd', attribution:'© CARTO'});
-  const map = L.map('m', {center:[lat, lon], zoom:15, layers:[osm]});
-  L.control.layers({'OpenStreetMap':osm, 'Carto Dark':dark, 'Carto White':light}).addTo(map);
+  const map = L.map('m', {center:[lat, lon], zoom:12, layers:[osm]});
+  const boundary = __BOUNDARY__;
+  const overlays = {};
+  if (boundary) {
+    const bLayer = L.geoJSON(boundary, {style:{color:'#ff6f00', weight:1.5,
+                                                fill:false, opacity:0.85}}).addTo(map);
+    overlays['ຂອບເຂດເມືອງ · District boundary'] = bLayer;
+  }
+  L.control.layers({'OpenStreetMap':osm, 'Carto Dark':dark, 'Carto White':light},
+                   overlays).addTo(map);
   L.circleMarker([lat, lon], {radius:9, color:'#fff', weight:2,
                               fillColor:'#ff2d2d', fillOpacity:1}).addTo(map);
 </script>
@@ -136,5 +150,8 @@ if names:
 
     lat, lon = _latlon(row)
     if pd.notna(lat) and pd.notna(lon):
-        html = PROFILE_MAP_HTML.replace("__LAT__", repr(float(lat))).replace("__LON__", repr(float(lon)))
+        html = (PROFILE_MAP_HTML
+                .replace("__BOUNDARY__", _BOUNDARY)
+                .replace("__LAT__", repr(float(lat)))
+                .replace("__LON__", repr(float(lon))))
         components.html(html, height=360)
