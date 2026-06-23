@@ -19,7 +19,7 @@ PROFILE_MAP_HTML = """
                            {maxZoom:19, subdomains:'abcd', attribution:'© CARTO'});
   const light = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
                             {maxZoom:19, subdomains:'abcd', attribution:'© CARTO'});
-  const map = L.map('m', {center:[lat, lon], zoom:15, layers:[dark]});
+  const map = L.map('m', {center:[lat, lon], zoom:15, layers:[osm]});
   L.control.layers({'OpenStreetMap':osm, 'Carto Dark':dark, 'Carto White':light}).addTo(map);
   L.circleMarker([lat, lon], {radius:9, color:'#fff', weight:2,
                               fillColor:'#ff2d2d', fillOpacity:1}).addTo(map);
