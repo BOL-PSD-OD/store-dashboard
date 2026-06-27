@@ -83,14 +83,14 @@ def subs():
         # PSP: Lao QR (S3_Q7) -> BCEL+JDB, merchant QR (S3_Q8) -> JDB
         {"S0_Q1": "2026-06-29", "S1_Q1": "1", "Section_3/S3_Q1": "restaurant",
          "S3_Q2": "other_shop", "S3_Q2_oth": "Taiwan", "S3.1_Q1": "ຫຼວງພະບາງ",
-         "S3.1_Q2": "ບ. ໜຶ່ງ", "S3_Q4": "1 2", "S3_Q6": "1", "S3_Q7": "1 2", "S3_Q8": "2",
+         "S3.1_Q2": "ບ. ໜຶ່ງ", "S3.1_Q4": "ລາວ", "S3_Q4": "1 2", "S3_Q6": "1", "S3_Q7": "1 2", "S3_Q8": "2",
          "S3_Q9": "0", "S3_Q11": "1 2 3", "S3_Q12": "1", "S3_Q14": "2",
          "S2_Q1": "1", "S2_Q2": "0", "S2_Q3": "1",
          "geopoint": "19.88 102.13 300 5", "_submission_time": "2026-06-29T03:00:00", "_id": 1},
         # foreign only, not using, not interested -> foreign_unint
         # PSP: foreign acceptance (S3_Q10) -> BCEL
         {"S0_Q1": "2026-06-29", "S1_Q1": "0", "Section_3/S3_Q1": "hotel",
-         "S3_Q2": "H001", "S3.1_Q1": "ຈອມເພັດ", "S3_Q4": "2", "S3_Q10": "1",
+         "S3_Q2": "H001", "S3.1_Q1": "ຈອມເພັດ", "S3.1_Q4": "ໄທ", "S3_Q4": "2", "S3_Q10": "1",
          "S3_Q11": "1", "S3_Q9": "0", "S3_Q12": "0", "S3_Q14": "1",
          "S2_Q1": "0", "_submission_time": "2026-06-29T10:00:00", "_id": 2},
     ]

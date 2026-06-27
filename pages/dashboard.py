@@ -59,9 +59,10 @@ with st.container(border=True):
 # --- 6 pies in a 3x2 grid, each in its own bento card ---
 # (col, i18n key, is multi-select?). Account status is the derived 9-state column.
 pie_specs = [
-    ("S3_Q1_label", "chart_biztype", False),
-    ("_status_label", "chart_status", False), ("S3_Q14_label", "chart_revenue", False),
+    ("S3_Q1_label", "chart_biztype", False), ("S3_Q14_label", "chart_revenue", False),
+    ("S3_Q12_label", "chart_interested", False),
     ("S3_Q6_label", "chart_qr", True), ("S3_Q11_label", "chart_network", True),
+    ("S3.1_Q4", "chart_nationality", False),   # owner nationality (free text)
 ]
 cols = st.columns(3)
 for i, (col, key, multi) in enumerate(pie_specs):

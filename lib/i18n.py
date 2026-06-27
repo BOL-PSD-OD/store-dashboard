@@ -27,6 +27,8 @@ UI = {
     "chart_license":    {"lo": "ໃບທະບຽນວິສາຫະກິດ", "en": "Enterprise registration"},
     "chart_status":     {"lo": "ສະຖານະພາບ", "en": "Account status"},
     "chart_revenue":    {"lo": "ລະດັບລາຍຮັບ / ຂະໜາດ", "en": "Revenue / SME size"},
+    "chart_interested": {"lo": "ຄວາມສົນໃຈໃຊ້ບໍລິການພາຍໃນ", "en": "Interested in domestic service"},
+    "chart_nationality": {"lo": "ສັນຊາດເຈົ້າຂອງຮ້ານ", "en": "Owner nationality"},
     "chart_qr":         {"lo": "QR ພາຍໃນ", "en": "Domestic QR"},
     "chart_network":    {"lo": "ເຄື່ອງມືຮັບຊຳລະຕ່າງປະເທດ", "en": "Foreign payment apps"},
     "chart_district":   {"lo": "ເມືອງ", "en": "District"},
