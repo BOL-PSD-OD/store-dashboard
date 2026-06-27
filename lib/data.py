@@ -9,20 +9,29 @@ _fetch = sheet.fetch
 
 
 def _read_config():
-    return str(st.secrets["SHEET_ID"]), str(st.secrets["GOOGLE_SA_JSON"])
+    """Return (sheet_id, auth). Prefer user OAuth (the user owns the Sheet; the
+    service account was deleted) and fall back to the service account."""
+    sid = str(st.secrets["SHEET_ID"])
+    if st.secrets.get("GOOGLE_OAUTH_CLIENT_ID"):
+        auth = {"client_id": str(st.secrets["GOOGLE_OAUTH_CLIENT_ID"]),
+                "client_secret": str(st.secrets["GOOGLE_OAUTH_CLIENT_SECRET"]),
+                "refresh_token": str(st.secrets["GOOGLE_OAUTH_REFRESH_TOKEN"])}
+    else:
+        auth = {"sa_json": str(st.secrets["GOOGLE_SA_JSON"])}
+    return sid, auth
 
 
 @st.cache_data(ttl=300, show_spinner="ກຳລັງໂຫຼດຂໍ້ມູນ...")
 def load_data() -> pd.DataFrame:
-    sid, sa = _read_config()
-    subs, form = _fetch(sid, sa)
+    sid, auth = _read_config()
+    subs, form = _fetch(sid, auth)
     return decode.decode_submissions(subs, form)
 
 
 @st.cache_data(ttl=600)
 def load_question_labels() -> dict:
-    sid, sa = _read_config()
-    _, form = _fetch(sid, sa)
+    sid, auth = _read_config()
+    _, form = _fetch(sid, auth)
     return decode.build_question_labels(form)
 
 
