@@ -17,7 +17,7 @@ def test_count_multi(form, subs):
 def test_count_multi_grouped(form, subs):
     df = decode.decode_submissions(subs, form)
     long = charts.count_multi_grouped(df, {
-        "S3_Q10_label": "Lao QR", "S3_Q11_label": "Merchant", "S3_Q13_label": "Foreign"})
+        "S3_Q7_label": "Lao QR", "S3_Q8_label": "Merchant", "S3_Q10_label": "Foreign"})
     got = {(r.provider, r.context): r.count for r in long.itertuples()}
     assert got[("BCEL", "Lao QR")] == 1
     assert got[("JDB", "Lao QR")] == 1
@@ -29,14 +29,14 @@ def test_count_multi_grouped(form, subs):
 
 def test_grouped_bar_returns_figure(form, subs):
     df = decode.decode_submissions(subs, form)
-    long = charts.count_multi_grouped(df, {"S3_Q10_label": "Lao QR"})
+    long = charts.count_multi_grouped(df, {"S3_Q7_label": "Lao QR"})
     assert isinstance(charts.grouped_bar(long, "title"), go.Figure)
     assert isinstance(charts.grouped_bar(charts.count_multi_grouped(df, {}), "t"), go.Figure)
 
 
 def test_network_pie_series(form, subs):
     df = decode.decode_submissions(subs, form)
-    counts = charts.count_multi(df, "S3_Q14_label")
+    counts = charts.count_multi(df, "S3_Q11_label")
     assert counts["Alipay"] == 2          # both records use Alipay
     assert counts["Wechat Pay"] == 1
 
@@ -54,9 +54,9 @@ def test_daily_counts(form, subs):
 
 def test_awareness_counts(form, subs):
     df = decode.decode_submissions(subs, form)
-    table = charts.awareness_counts(df, ["S4_Q1"])
-    assert table.loc["S4_Q1", "aware"] == 1
-    assert table.loc["S4_Q1", "not_aware"] == 1
+    table = charts.awareness_counts(df, ["S2_Q1"])
+    assert table.loc["S2_Q1", "aware"] == 1
+    assert table.loc["S2_Q1", "not_aware"] == 1
 
 def test_pie_returns_figure(form, subs):
     df = decode.decode_submissions(subs, form)

@@ -7,10 +7,10 @@ def test_decode_submissions(form, subs):
     # group prefix stripped + select_one decoded
     assert list(df["S3_Q1"]) == ["restaurant", "hotel"]
     assert list(df["S3_Q1_label"]) == ["ຮ້ານອາຫານ", "ໂຮງແຮມ"]
-    # select_multiple -> list of codes + list of labels
-    assert df.loc[0, "S3_Q10"] == ["1", "2"]
-    assert df.loc[0, "S3_Q10_label"] == ["BCEL", "JDB"]
-    # combined PSP column (across S3_Q10/Q11/Q13)
+    # select_multiple -> list of codes + list of labels (PSP Lao QR is now S3_Q7)
+    assert df.loc[0, "S3_Q7"] == ["1", "2"]
+    assert df.loc[0, "S3_Q7_label"] == ["BCEL", "JDB"]
+    # combined PSP column (across S3_Q7/Q8/Q10)
     assert df.loc[0, "_psp_label"] == ["BCEL", "JDB"]
     # derived account status (acquirer x use_domestic x interested)
     assert df.loc[0, "_status"] == "both_int"

@@ -41,8 +41,8 @@ if date_col:
 else:
     today_n = int((df["_date"] == today).sum()) if "_date" in df.columns else 0
     days = int(df["_date"].dropna().nunique()) if "_date" in df.columns else 0
-districts = int(df["S3_Q3_label"].dropna().nunique()) if "S3_Q3_label" in df.columns else 0
-villages = int(df["S3_Q4_label"].dropna().nunique()) if "S3_Q4_label" in df.columns else 0
+districts = int(df["S3.1_Q1"].dropna().nunique()) if "S3.1_Q1" in df.columns else 0
+villages = int(df["S3.1_Q2"].dropna().nunique()) if "S3.1_Q2" in df.columns else 0
 
 # --- KPI cards (each its own bento cell) ---
 kpis = [("kpi_total", total), ("kpi_today", today_n), ("kpi_days", days),
@@ -59,9 +59,9 @@ with st.container(border=True):
 # --- 6 pies in a 3x2 grid, each in its own bento card ---
 # (col, i18n key, is multi-select?). Account status is the derived 9-state column.
 pie_specs = [
-    ("S3_Q1_label", "chart_biztype", False), ("S3_Q6_label", "chart_license", False),
-    ("_status_label", "chart_status", False), ("S3_Q17_label", "chart_revenue", False),
-    ("S3_Q9_label", "chart_qr", True), ("S3_Q14_label", "chart_network", True),
+    ("S3_Q1_label", "chart_biztype", False),
+    ("_status_label", "chart_status", False), ("S3_Q14_label", "chart_revenue", False),
+    ("S3_Q6_label", "chart_qr", True), ("S3_Q11_label", "chart_network", True),
 ]
 cols = st.columns(3)
 for i, (col, key, multi) in enumerate(pie_specs):
@@ -70,27 +70,27 @@ for i, (col, key, multi) in enumerate(pie_specs):
         st.plotly_chart(charts.pie(series, i18n.t(key, lang)), use_container_width=True)
 
 # --- Section-4 awareness + full question list (one bento card) ---
-s4 = [c for c in ["S4_Q1", "S4_Q2", "S4_Q3", "S4_Q4"] if c in df.columns]
-labels = {q: f"{q[1]}.{q.split('_Q')[-1]}" for q in s4}  # 'S4_Q1' -> '4.1'
+s2 = [c for c in ["S2_Q1", "S2_Q2", "S2_Q3"] if c in df.columns]
+labels = {q: f"{q[1]}.{q.split('_Q')[-1]}" for q in s2}  # 'S2_Q1' -> '2.1'
 qlabels = data.load_question_labels()
 with st.container(border=True):
     st.plotly_chart(
-        charts.awareness_hbar(charts.awareness_counts(df, s4), labels,
+        charts.awareness_hbar(charts.awareness_counts(df, s2), labels,
                               i18n.t("aware_yes", lang), i18n.t("aware_no", lang),
                               i18n.t("chart_awareness", lang)),
         use_container_width=True)
-    if s4:
+    if s2:
         st.markdown(f"**{i18n.t('section4_questions', lang)}**")
-        for q in s4:
+        for q in s2:
             # form label already starts with the '4.x' number, so show it as-is
             st.markdown(f"- {qlabels.get(q, q)}")
 
 # --- PSP grouped bar (bento card) — split by the 3 contexts ---
 # S3_Q10 = Lao QR, S3_Q11 = merchant QR, S3_Q13 = foreign acceptance.
 psp_ctx = {
-    "S3_Q10_label": i18n.t("psp_ctx_laoqr", lang),
-    "S3_Q11_label": i18n.t("psp_ctx_merchant", lang),
-    "S3_Q13_label": i18n.t("psp_ctx_foreign", lang),
+    "S3_Q7_label":  i18n.t("psp_ctx_laoqr", lang),
+    "S3_Q8_label":  i18n.t("psp_ctx_merchant", lang),
+    "S3_Q10_label": i18n.t("psp_ctx_foreign", lang),
 }
 with st.container(border=True):
     st.plotly_chart(

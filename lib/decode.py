@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import datetime as dt
 import pandas as pd
+from lib.fields import resolve_fields
 
 
 def strip_group(key: str) -> str:
@@ -137,19 +138,25 @@ def derive_status(acquirer, use_domestic, interested) -> str:
 
 # Derived columns added to every decoded row (also seeded on the empty frame).
 DERIVED_COLS = ["_date", "_idate_label", "_status", "_status_label", "_psp_label"]
-PSP_COLS = ("S3_Q10", "S3_Q11", "S3_Q13")  # bank/PSP across the three branches
+
+# Fallback field map (new-form numbers) when a form is too partial to resolve
+# (keeps this read-only viewer from crashing; the engine stays strictly fail-loud).
+_FALLBACK_FIELDS = {"acquirer": "S3_Q4", "use_domestic": "S3_Q9",
+                    "interested": "S3_Q12", "psp": []}
 
 
-def _enrich(row: dict, flat: dict) -> None:
-    """Add the derived columns (status, interview date, combined PSP) to a row."""
+def _enrich(row: dict, flat: dict, fields: dict) -> None:
+    """Add the derived columns (status, interview date, combined PSP) using the
+    resolved field map (resilient to question renumbering)."""
     row["_date"] = _to_local_date(flat.get("_submission_time"))
     row["_idate_label"] = _ddmmyyyy(flat.get("S0_Q1"))
-    acq = row.get("S3_Q7") if isinstance(row.get("S3_Q7"), list) else []
-    status = derive_status(acq, row.get("S3_Q12"), row.get("S3_Q15"))
+    acq_col = fields.get("acquirer")
+    acq = row.get(acq_col) if isinstance(row.get(acq_col), list) else []
+    status = derive_status(acq, row.get(fields.get("use_domestic")), row.get(fields.get("interested")))
     row["_status"] = status
     row["_status_label"] = STATUS_LABELS.get(status, status)
     psp: list[str] = []
-    for q in PSP_COLS:
+    for q in fields.get("psp", []):
         for x in (row.get(q + "_label") or []):
             if x and x not in psp:
                 psp.append(x)
@@ -159,6 +166,10 @@ def _enrich(row: dict, flat: dict) -> None:
 def decode_submissions(subs: list[dict], form: dict) -> pd.DataFrame:
     qmeta = build_question_meta(form)
     cmap = build_choice_map(form)
+    try:
+        fields = resolve_fields(form)
+    except ValueError:
+        fields = dict(_FALLBACK_FIELDS)
     rows = []
     for rec in subs:
         flat = {strip_group(k): v for k, v in rec.items()}
@@ -174,7 +185,7 @@ def decode_submissions(subs: list[dict], form: dict) -> pd.DataFrame:
                 code = "" if raw is None else str(raw)
                 row[name] = code if code else None
                 row[name + "_label"] = lst.get(code) if code else None
-        _enrich(row, flat)
+        _enrich(row, flat, fields)
         rows.append(row)
 
     if not rows:

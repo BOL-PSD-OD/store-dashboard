@@ -120,7 +120,7 @@ if names:
     for code, label in qlabels.items():
         if code.endswith("_oth"):
             continue
-        m = re.match(r"S(\d)_", code)
+        m = re.match(r"S(\d)", code)   # matches S3.1_Q1 (dotted) -> section 3 too
         key = f"section_{m.group(1)}" if m else None
         if key in sections:
             sections[key].append((code, label))
