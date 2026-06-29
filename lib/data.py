@@ -2,10 +2,11 @@
 from __future__ import annotations
 import pandas as pd
 import streamlit as st
-from lib import sheet, decode
+from lib import sheet, decode, psp
 
 # Indirection point so tests can monkeypatch without network/secrets:
 _fetch = sheet.fetch
+_fetch_psp = psp.fetch_psp
 
 
 def _read_config():
@@ -19,6 +20,12 @@ def _read_config():
     else:
         auth = {"sa_json": str(st.secrets["GOOGLE_SA_JSON"])}
     return sid, auth
+
+
+def _read_psp_config():
+    """(PSP_SHEET_ID, auth) — reuses the same auth as the main Sheet."""
+    _, auth = _read_config()
+    return str(st.secrets["PSP_SHEET_ID"]), auth
 
 
 @st.cache_data(ttl=300, show_spinner="ກຳລັງໂຫຼດຂໍ້ມູນ...")
@@ -35,6 +42,19 @@ def load_question_labels() -> dict:
     return decode.build_question_labels(form)
 
 
+@st.cache_data(ttl=300, show_spinner="ກຳລັງໂຫຼດຂໍ້ມູນ PSP...")
+def load_psp_data() -> pd.DataFrame:
+    """Round-2 follow-up frame. Empty (page stays alive) if PSP_SHEET_ID is unset
+    or the read fails."""
+    try:
+        sid, auth = _read_psp_config()
+        rows = _fetch_psp(sid, auth)
+    except Exception:
+        rows = []
+    return psp.psp_dataframe(rows)
+
+
 def clear_cache() -> None:
     load_data.clear()
     load_question_labels.clear()
+    load_psp_data.clear()

@@ -83,3 +83,28 @@ def kpis(round1_df: pd.DataFrame, pdf: pd.DataFrame) -> dict:
         "conv_followed": _pct(opened, followed_up),
         "conv_overall": _pct(opened, interested),
     }
+
+
+def fetch_psp(sheet_id: str, auth: dict, tab: str = "data") -> list:
+    """Read the PSP follow-up sheet's `tab` worksheet -> list of dict rows.
+    auth: {"client_id","client_secret","refresh_token"} (OAuth) or {"sa_json": ...}.
+    Returns [] if the tab is missing. gspread/google-auth imported lazily."""
+    import gspread
+    if "client_id" in auth:
+        from google.oauth2.credentials import Credentials as UserCredentials
+        creds = UserCredentials(
+            None, refresh_token=auth["refresh_token"],
+            client_id=auth["client_id"], client_secret=auth["client_secret"],
+            token_uri="https://oauth2.googleapis.com/token",
+            scopes=["https://www.googleapis.com/auth/drive"])
+    else:
+        import json
+        from google.oauth2.service_account import Credentials
+        creds = Credentials.from_service_account_info(
+            json.loads(auth["sa_json"]),
+            scopes=["https://www.googleapis.com/auth/spreadsheets.readonly"])
+    sh = gspread.authorize(creds).open_by_key(sheet_id)
+    try:
+        return sh.worksheet(tab).get_all_records()
+    except gspread.WorksheetNotFound:
+        return []

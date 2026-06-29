@@ -51,3 +51,22 @@ def test_kpis_no_divide_by_zero():
     df = pd.DataFrame({"_status": []})
     k = psp.kpis(df, psp.psp_dataframe([]))
     assert k["conv_followed"] == 0.0 and k["conv_overall"] == 0.0
+
+
+def test_load_psp_data_reads_rows(monkeypatch):
+    from lib import data
+    monkeypatch.setattr(data, "_read_psp_config", lambda: ("sid", {"sa_json": "x"}))
+    monkeypatch.setattr(data, "_fetch_psp",
+                        lambda sid, auth: [{"PSP": "BCEL", "store_id": "H001", "last_result": "ເປີດ"}])
+    df = data.load_psp_data.__wrapped__()
+    assert len(df) == 1 and df.iloc[0]["PSP"] == "BCEL"
+
+
+def test_load_psp_data_resilient_on_error(monkeypatch):
+    from lib import data
+
+    def boom():
+        raise KeyError("PSP_SHEET_ID")
+
+    monkeypatch.setattr(data, "_read_psp_config", boom)
+    assert data.load_psp_data.__wrapped__().empty
