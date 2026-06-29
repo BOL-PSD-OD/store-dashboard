@@ -41,6 +41,7 @@ else:
     lang = st.session_state["lang"]
     nav = st.navigation([
         st.Page("pages/dashboard.py", title=i18n.t("nav_dashboard", lang), icon="📊", default=True),
+        st.Page("pages/compare.py", title=i18n.t("nav_compare", lang), icon="⚖️"),
         st.Page("pages/store_profiles.py", title=i18n.t("nav_profiles", lang), icon="🏪"),
         st.Page("pages/map.py", title=i18n.t("nav_map", lang), icon="🗺️"),
     ])
