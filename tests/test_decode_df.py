@@ -21,8 +21,19 @@ def test_decode_submissions(form, subs):
     assert df.loc[0, "_date"] == dt.date(2026, 6, 29)
     assert df.loc[1, "_date"] == dt.date(2026, 6, 29)
 
+def test_stable_detail_columns_resolve_after_license_shift(form, subs):
+    """district/village/nationality are exposed under renumber-proof _* columns
+    resolved from the form, not the raw S3.1_Q* positions (which shifted when the
+    2026-07 form inserted the License question at S3.1_Q1)."""
+    df = decode.decode_submissions(subs, form)
+    assert list(df["_district"]) == ["ຫຼວງພະບາງ", "ຈອມເພັດ"]
+    assert df.loc[0, "_village"] == "ບ. ໜຶ່ງ"
+    assert list(df["_nationality"]) == ["ລາວ", "ໄທ"]
+
+
 def test_decode_empty(form):
     df = decode.decode_submissions([], form)
     assert len(df) == 0
     assert "S3_Q1_label" in df.columns  # columns still present for downstream charts
     assert "_status_label" in df.columns
+    assert "_district" in df.columns and "_nationality" in df.columns

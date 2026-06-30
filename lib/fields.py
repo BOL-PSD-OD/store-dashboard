@@ -7,8 +7,11 @@ LIST_FIELDS = {
     "payment": "Payment", "network": "Network", "why": "why", "revenue": "profit",
 }
 REQUIRED = {"biz_type", "shop_name", "acquirer", "use_domestic", "interested"}
-TEXT_FIELDS = {"district": "S3.1_Q1", "village": "S3.1_Q2",
-               "owner_name": "S3.1_Q3", "nationality": "S3.1_Q4", "phone": "S3.1_Q5"}
+# 2026-07 form inserts a `select_one License` question at S3.1_Q1, pushing these
+# five detail text fields down by one (district S3.1_Q1 -> S3.1_Q2, ... phone
+# S3.1_Q5 -> S3.1_Q6). Mirror of store_master/fields.py.
+TEXT_FIELDS = {"district": "S3.1_Q2", "village": "S3.1_Q3",
+               "owner_name": "S3.1_Q4", "nationality": "S3.1_Q5", "phone": "S3.1_Q6"}
 
 
 def _survey(form):

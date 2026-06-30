@@ -137,7 +137,11 @@ def derive_status(acquirer, use_domestic, interested) -> str:
 
 
 # Derived columns added to every decoded row (also seeded on the empty frame).
-DERIVED_COLS = ["_date", "_idate_label", "_status", "_status_label", "_psp_label"]
+# The free-text detail fields are exposed under STABLE names resolved from the
+# form (district/village/nationality) so pages never hardcode S3.1_Q* positions,
+# which shift whenever the form gains a question (e.g. the 2026-07 License field).
+DERIVED_COLS = ["_date", "_idate_label", "_status", "_status_label", "_psp_label",
+                "_district", "_village", "_nationality"]
 
 # Fallback field map (new-form numbers) when a form is too partial to resolve
 # (keeps this read-only viewer from crashing; the engine stays strictly fail-loud).
@@ -161,6 +165,10 @@ def _enrich(row: dict, flat: dict, fields: dict) -> None:
             if x and x not in psp:
                 psp.append(x)
     row["_psp_label"] = psp
+    # Stable free-text detail columns (resolved by list-name, renumber-proof).
+    for logical in ("district", "village", "nationality"):
+        col = fields.get(logical)
+        row["_" + logical] = flat.get(col) if col else None
 
 
 def decode_submissions(subs: list[dict], form: dict) -> pd.DataFrame:

@@ -41,8 +41,8 @@ if date_col:
 else:
     today_n = int((df["_date"] == today).sum()) if "_date" in df.columns else 0
     days = int(df["_date"].dropna().nunique()) if "_date" in df.columns else 0
-districts = int(df["S3.1_Q1"].dropna().nunique()) if "S3.1_Q1" in df.columns else 0
-villages = int(df["S3.1_Q2"].dropna().nunique()) if "S3.1_Q2" in df.columns else 0
+districts = int(df["_district"].dropna().nunique()) if "_district" in df.columns else 0
+villages = int(df["_village"].dropna().nunique()) if "_village" in df.columns else 0
 
 # --- KPI cards (each its own bento cell) ---
 kpis = [("kpi_total", total), ("kpi_today", today_n), ("kpi_days", days),
@@ -62,7 +62,7 @@ pie_specs = [
     ("S3_Q1_label", "chart_biztype", False), ("S3_Q14_label", "chart_revenue", False),
     ("S3_Q12_label", "chart_interested", False),
     ("S3_Q6_label", "chart_qr", True), ("S3_Q11_label", "chart_network", True),
-    ("S3.1_Q4", "chart_nationality", False),   # owner nationality (free text)
+    ("_nationality", "chart_nationality", False),   # owner nationality (free text, renumber-proof)
 ]
 cols = st.columns(3)
 for i, (col, key, multi) in enumerate(pie_specs):

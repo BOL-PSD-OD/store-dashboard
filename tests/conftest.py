@@ -3,9 +3,11 @@ import pytest
 
 @pytest.fixture
 def form():
-    """New-form fixture (2026-06-27 revision): Section 1 screening, Section 2
-    awareness (learn), Section 3 business + payment with the renumbered
-    questions and free-text district/village (S3.1_Q1/Q2), plus S0_Q1 date."""
+    """New-form fixture (2026-07 revision): Section 1 screening, Section 2
+    awareness (learn), Section 3 business + payment. Section 3.1 now leads with a
+    `select_one License` question (S3.1_Q1), pushing the free-text detail fields
+    down one: district S3.1_Q2, village S3.1_Q3, owner S3.1_Q4, nationality
+    S3.1_Q5, phone S3.1_Q6. Plus S0_Q1 date."""
     return {
         "content": {
             "survey": [
@@ -22,8 +24,12 @@ def form():
                 {"type": "select_one biz_type", "name": "S3_Q1", "label": ["3.1 biz type"]},
                 {"type": "select_one shop_name", "name": "S3_Q2", "label": ["3.2 shop"]},
                 {"type": "begin_group", "name": "Section_3.1"},
-                {"type": "text", "name": "S3.1_Q1", "label": ["ເມືອງ"]},
-                {"type": "text", "name": "S3.1_Q2", "label": ["ບ້ານ"]},
+                {"type": "select_one License", "name": "S3.1_Q1", "label": ["ໃບທະບຽນ"]},
+                {"type": "text", "name": "S3.1_Q2", "label": ["ເມືອງ"]},
+                {"type": "text", "name": "S3.1_Q3", "label": ["ບ້ານ"]},
+                {"type": "text", "name": "S3.1_Q4", "label": ["ຊື່ເຈົ້າຂອງຮ້ານ"]},
+                {"type": "text", "name": "S3.1_Q5", "label": ["ສັນຊາດ"]},
+                {"type": "text", "name": "S3.1_Q6", "label": ["ເບີໂທ"]},
                 {"type": "end_group"},
                 {"type": "begin_group", "name": "Section_3.2"},
                 {"type": "select_one YN", "name": "S3_Q3", "label": ["3.3 night market"]},
@@ -45,6 +51,8 @@ def form():
             "choices": [
                 {"list_name": "YN", "name": "1", "label": ["ແມ່ນ"]},
                 {"list_name": "YN", "name": "0", "label": ["ບໍ່ແມ່ນ"]},
+                {"list_name": "License", "name": "1", "label": ["ມີໃບທະບຽນ"]},
+                {"list_name": "License", "name": "0", "label": ["ບໍ່ມີໃບທະບຽນ"]},
                 {"list_name": "learn", "name": "1", "label": ["ເຄີຍໄດ້ຮັບຟັງແລ້ວ"]},
                 {"list_name": "learn", "name": "0", "label": ["ບໍ່ເຄີຍ"]},
                 {"list_name": "biz_type", "name": "restaurant", "label": ["ຮ້ານອາຫານ"]},
@@ -82,15 +90,15 @@ def subs():
         # both domestic+foreign, not using, interested -> both_int
         # PSP: Lao QR (S3_Q7) -> BCEL+JDB, merchant QR (S3_Q8) -> JDB
         {"S0_Q1": "2026-06-29", "S1_Q1": "1", "Section_3/S3_Q1": "restaurant",
-         "S3_Q2": "other_shop", "S3_Q2_oth": "Taiwan", "S3.1_Q1": "ຫຼວງພະບາງ",
-         "S3.1_Q2": "ບ. ໜຶ່ງ", "S3.1_Q4": "ລາວ", "S3_Q4": "1 2", "S3_Q6": "1", "S3_Q7": "1 2", "S3_Q8": "2",
+         "S3_Q2": "other_shop", "S3_Q2_oth": "Taiwan", "S3.1_Q1": "1", "S3.1_Q2": "ຫຼວງພະບາງ",
+         "S3.1_Q3": "ບ. ໜຶ່ງ", "S3.1_Q5": "ລາວ", "S3_Q4": "1 2", "S3_Q6": "1", "S3_Q7": "1 2", "S3_Q8": "2",
          "S3_Q9": "0", "S3_Q11": "1 2 3", "S3_Q12": "1", "S3_Q14": "2",
          "S2_Q1": "1", "S2_Q2": "0", "S2_Q3": "1",
          "geopoint": "19.88 102.13 300 5", "_submission_time": "2026-06-29T03:00:00", "_id": 1},
         # foreign only, not using, not interested -> foreign_unint
         # PSP: foreign acceptance (S3_Q10) -> BCEL
         {"S0_Q1": "2026-06-29", "S1_Q1": "0", "Section_3/S3_Q1": "hotel",
-         "S3_Q2": "H001", "S3.1_Q1": "ຈອມເພັດ", "S3.1_Q4": "ໄທ", "S3_Q4": "2", "S3_Q10": "1",
+         "S3_Q2": "H001", "S3.1_Q2": "ຈອມເພັດ", "S3.1_Q5": "ໄທ", "S3_Q4": "2", "S3_Q10": "1",
          "S3_Q11": "1", "S3_Q9": "0", "S3_Q12": "0", "S3_Q14": "1",
          "S2_Q1": "0", "_submission_time": "2026-06-29T10:00:00", "_id": 2},
     ]
