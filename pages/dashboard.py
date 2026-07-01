@@ -1,5 +1,6 @@
 """Dashboard page: KPI cards, daily chart, pies, awareness, PSP bar (bento layout)."""
 import datetime as dt
+import re
 import streamlit as st
 from lib import data, charts, i18n
 
@@ -71,7 +72,8 @@ for i, (col, key, multi) in enumerate(pie_specs):
         st.plotly_chart(charts.pie(series, i18n.t(key, lang)), use_container_width=True)
 
 # --- Section-4 awareness + full question list (one bento card) ---
-s2 = [c for c in ["S2_Q1", "S2_Q2", "S2_Q3"] if c in df.columns]
+s2 = sorted((c for c in df.columns if re.fullmatch(r"S2_Q\d+", c)),
+            key=lambda c: int(c.split("_Q")[1]))            # Section-2 awareness cols, in form order
 labels = {q: f"{q[1]}.{q.split('_Q')[-1]}" for q in s2}  # 'S2_Q1' -> '2.1'
 qlabels = data.load_question_labels()
 with st.container(border=True):
